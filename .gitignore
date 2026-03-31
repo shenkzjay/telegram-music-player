@@ -5,3 +5,10 @@
 # React Router
 /.react-router/
 /build/
+
+/generated/prisma
+
+
+.qodo/
+.qodo/*
+
