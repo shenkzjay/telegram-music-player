@@ -36,7 +36,7 @@ export function OnboardingPage({ onConnect }: { onConnect: () => void }) {
                     I've added the bot
                 </button>
                 <p className="mt-4 text-xs text-[var(--tg-theme-hint-color)] uppercase tracking-widest font-bold">
-                    The bot will automatically detect your channel
+                    The bot will  detect your channel
                 </p>
             </div>
         </div>
