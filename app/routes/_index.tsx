@@ -12,9 +12,20 @@ export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const initData = formData.get("initData") as string;
 
-    if (!initData) return { error: "Missing initData" };
+    let tgUser;
 
-    const tgUser = validateTelegramInitData(initData, process.env.TELEGRAM_BOT_TOKEN!);
+    // DEV MODE: Bypass auth if initData is missing in development
+    if (!initData && process.env.NODE_ENV === "development") {
+        console.log("DEV MODE: Using mock user for local testing");
+        tgUser = {
+            id: process.env.DEBUG_USER_ID || "12345678",
+            username: "dev_user"
+        };
+    } else {
+        if (!initData) return { error: "Missing initData" };
+        tgUser = validateTelegramInitData(initData, process.env.TELEGRAM_BOT_TOKEN!);
+    }
+
     if (!tgUser) return { error: "Invalid auth" };
 
     // Upsert user in database
@@ -31,6 +42,33 @@ export async function action({ request }: Route.ActionArgs) {
             }
         }
     });
+
+    // DEV MODE: Inject mock data if no real channel exists
+    if (process.env.NODE_ENV === "development" && (!user.channels || user.channels.songs.length === 0)) {
+        console.log("DEV MODE: Injecting mock songs for testing");
+        (user as any).channels = {
+            id: -1,
+            tgChatId: "mock_chat",
+            songs: [
+                {
+                    id: -1,
+                    fileId: "mock_id_1",
+                    title: "Stargazing (Mock)",
+                    artist: "Myles Smith",
+                    duration: 172,
+                    thumbnailId: null
+                },
+                {
+                    id: -2,
+                    fileId: "mock_id_2",
+                    title: "Grace (Mock)",
+                    artist: "Michael W. Smith",
+                    duration: 246,
+                    thumbnailId: null
+                }
+            ]
+        };
+    }
 
     return { user };
 }
@@ -49,30 +87,31 @@ export default function Home() {
     }, [fetcher.data, setPlaylist]);
 
     useEffect(() => {
-        // Hide splash after 2.5s
-        const timer = setTimeout(() => setShowSplash(false), 2500);
+        // Hide splash after 2s (slightly faster for dev)
+        const timer = setTimeout(() => setShowSplash(false), 2000);
 
         // Authenticate with Telegram
         const initPayload = async () => {
+            if (hasInitialized) return;
+
             try {
                 const WebApp = (await import("@twa-dev/sdk")).default;
-                if (WebApp.initData && !hasInitialized) {
-                    fetcher.submit(
-                        { initData: WebApp.initData },
-                        { method: "post" }
-                    );
+
+                if (WebApp.initData) {
+                    fetcher.submit({ initData: WebApp.initData }, { method: "post" });
                     setHasInitialized(true);
-                } else if (!WebApp.initData && !hasInitialized) {
-                    // Dev/Mocking mode: submit placeholder if not in Telegram
-                    if (import.meta.env.DEV) {
-                        console.log("Not in Telegram. Skipping auth for now.");
-                        // We could submit mock data here if needed
-                    }
+                } else if (import.meta.env.DEV) {
+                    // AUTO-LOGIN on Localhost
+                    console.log("Localhost detected: Submitting mock auth...");
+                    fetcher.submit({}, { method: "post" }); // Submit empty to trigger dev bypass in action
                     setHasInitialized(true);
                 }
             } catch (e) {
-                console.error("Auth failed", e);
-                setHasInitialized(true);
+                if (import.meta.env.DEV) {
+                    fetcher.submit({}, { method: "post" });
+                    setHasInitialized(true);
+                }
+                console.error("Auth initialization failed", e);
             }
         };
 
@@ -81,29 +120,25 @@ export default function Home() {
     }, [fetcher, hasInitialized]);
 
     // Loading state
-    if (showSplash || fetcher.state === "submitting") {
-        return <SplashScreen />;
-    }
-
-    // Handle case where auth failed or wasn't attempted (non-Telegram)
-    if (!fetcher.data || fetcher.data.error) {
-        if (!showSplash) {
-            return (
-                <div className="p-10 text-center space-y-4">
-                    <h1 className="text-xl font-bold">Please open in Telegram</h1>
-                    <p className="text-sm text-[var(--tg-theme-hint-color)]">This app only works inside Telegram.</p>
-                    {fetcher.data?.error && <pre className="text-xs text-red-500 italic mt-4">{fetcher.data.error}</pre>}
-                    <div className="pt-8">
-                        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-xl">Retry</button>
-                    </div>
-                </div>
-            );
-        }
+    if (showSplash || fetcher.state === "submitting" || (fetcher.state === "idle" && !fetcher.data)) {
         return <SplashScreen />;
     }
 
     const user = fetcher.data?.user;
     const channel = user?.channels;
+
+    // Handle case where auth failed or wasn't attempted (non-Telegram production)
+    if ((!fetcher.data || fetcher.data.error) && !import.meta.env.DEV) {
+        return (
+            <div className="p-10 text-center space-y-4">
+                <h1 className="text-xl font-bold">Please open in Telegram</h1>
+                <p className="text-sm text-[var(--tg-theme-hint-color)]">This app only works inside Telegram.</p>
+                <div className="pt-8">
+                    <button onClick={() => window.location.reload()} className="px-6 py-2 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-xl">Retry</button>
+                </div>
+            </div>
+        );
+    }
 
     if (!channel) {
         return <OnboardingPage

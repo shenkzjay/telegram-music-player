@@ -99,9 +99,9 @@ export function FullPlayer() {
                     </div>
                 </div>
 
-                <div className="w-full flex flex-col items-center space-y-6">
+                <div className="w-full flex flex-col items-center space-y-4">
                     {/* Main Controls */}
-                    <div className="flex items-center justify-center space-x-6 sm:space-x-8">
+                    <div className="flex items-center justify-center space-x-4 sm:space-x-6">
                         <button onClick={(e) => { e.stopPropagation(); skipBackward(); }} className="p-2 text-[var(--tg-theme-text-color)]/60 active:scale-90 transition-transform">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
