@@ -38,7 +38,12 @@ export async function action({ request }: Route.ActionArgs) {
         },
         include: {
             channels: {
-                include: { songs: { orderBy: { id: "desc" } } }
+                include: {
+                    songs: {
+                        where: { isAvailable: true },
+                        orderBy: { id: "desc" }
+                    }
+                }
             }
         }
     });
@@ -140,7 +145,7 @@ export default function Home() {
         );
     }
 
-    if (!channel) {
+    if (!channel || !channel.isActive) {
         return <OnboardingPage
             isChecking={isChecking}
             onConnect={async () => {

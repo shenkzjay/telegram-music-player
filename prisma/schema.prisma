@@ -44,6 +44,7 @@ model Song {
   title     String
   artist    String
   duration  Int // Duration in seconds
+  isAvailable Boolean @default(true) // Track if song is still accessible
   channelId String
   channel   Channel  @relation(fields: [channelId], references: [id])
 }

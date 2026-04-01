@@ -17,7 +17,7 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
     console.log("MusicPlayerPage Playlist:", playlist);
 
     return (
-        <div className="relative min-h-screen bg-[var(--tg-theme-bg-color)]">
+        <div className="relative min-h-screen bg-transparent">
             <div className="p-6 pb-32 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <header className="flex items-center justify-between pb-4">
                     <div className="space-y-1">
@@ -28,11 +28,11 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
                             {channel?.tgChatId || "Personal Library"}
                         </p>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-[var(--tg-theme-secondary-bg-color)] flex items-center justify-center border border-white/5 active:scale-95 transition-transform shadow-lg">
+                    {/* <div className="w-12 h-12 rounded-2xl bg-[var(--tg-theme-secondary-bg-color)] flex items-center justify-center border border-white/5 active:scale-95 transition-transform shadow-lg">
                         <svg className="w-6 h-6 text-[var(--tg-theme-link-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
-                    </div>
+                    </div> */}
                 </header>
 
                 <section className="space-y-6">
@@ -52,13 +52,14 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
                                 <div
                                     key={track.id}
                                     onClick={() => playTrack(track)}
-                                    className={`group flex items-center p-4 rounded-[2rem] transition-all cursor-pointer active:scale-[0.98] ${currentTrack?.id === track.id
-                                        ? "bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] shadow-[0_15px_35px_rgba(36,161,222,0.3)] ring-1 ring-white/20"
-                                        : "bg-[var(--tg-theme-secondary-bg-color)]/50 hover:bg-[var(--tg-theme-secondary-bg-color)] border border-white/5 shadow-sm"
+                                    className={`group flex items-center py-4 rounded-[2rem] transition-all cursor-pointer active:scale-[0.98]  ${currentTrack?.id === track.id
+                                        ? "bg-white/8 backdrop-blur-[30px] backdrop-contrast-[1] text-[var(--tg-theme-button-text-color)] ring-1 ring-white/20 px-4 shadow-[0_15px_35px_rgba(36,161,222,0.2)]  "
+                                        : " text-white"
                                         }`}
                                 >
                                     <Artwork
                                         thumbnailId={track.thumbnailId}
+                                        isPlaying={isPlaying && currentTrack?.id === track.id}
                                         size="md"
                                         className={currentTrack?.id === track.id ? "shadow-inner border-white/20" : ""}
                                     />
@@ -92,12 +93,12 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
                 </section>
 
                 {currentTrack && (
-                    <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--tg-theme-bg-color)] via-[var(--tg-theme-bg-color)] to-transparent pointer-events-none z-40">
+                    <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-40">
                         <div
                             onClick={() => setIsPlayerOpen(true)}
-                            className="pointer-events-auto h-20 bg-[var(--tg-theme-button-color)]/95 backdrop-blur-2xl rounded-[2.5rem] flex items-center px-4 shadow-[0_25px_60px_rgba(0,0,0,0.3)] ring-1 ring-white/20 active:scale-[0.98] transition-all cursor-pointer"
+                            className="pointer-events-auto h-20 bg-white/8 backdrop-blur-[30px] backdrop-contrast-[1] rounded-[2.5rem] flex items-center px-4 shadow-[0_25px_60px_rgba(0,0,0,0.3)] ring-1 ring-white/20 active:scale-[0.98] transition-all cursor-pointer"
                         >
-                            <Artwork thumbnailId={currentTrack.thumbnailId} size="md" className="ring-1 ring-white/10" />
+                            <Artwork thumbnailId={currentTrack.thumbnailId} isPlaying={isPlaying} size="md" className="ring-1 ring-white/10" />
 
                             <div className="ml-4 flex-1 overflow-hidden">
                                 <div className="text-[var(--tg-theme-button-text-color)] font-black text-sm uppercase truncate tracking-tight">{currentTrack.title}</div>
@@ -106,7 +107,7 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
 
                             <button
                                 onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-                                className="flex-shrink-0 w-14 h-14 bg-white text-[var(--tg-theme-button-color)] rounded-3xl flex items-center justify-center shadow-xl active:scale-90 transition-transform"
+                                className="flex-shrink-0 w-14 h-14 bg-white/8 backdrop-blur-[30px] backdrop-contrast-[1]  text-white rounded-3xl flex items-center justify-center shadow-xl active:scale-90 transition-transform"
                             >
                                 {isPlaying ? (
                                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

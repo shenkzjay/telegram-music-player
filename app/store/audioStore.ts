@@ -33,6 +33,7 @@ interface AudioState {
     shuffleAll: () => void;
     skipForward: () => void;
     skipBackward: () => void;
+    markUnavailable: (fileId: string) => Promise<void>;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -50,6 +51,31 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     playTrack: (track) => set({ currentTrack: track, isPlaying: true, currentTime: 0, isPlayerOpen: true }),
 
     togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+
+    markUnavailable: async (fileId: string) => {
+        const { playlist, currentTrack, nextTrack } = get();
+
+        // Mark locally
+        const updatedPlaylist = playlist.filter(s => s.fileId !== fileId);
+        set({ playlist: updatedPlaylist });
+
+        // If it was the current track, go to next
+        if (currentTrack?.fileId === fileId) {
+            nextTrack();
+        }
+
+        // Report to server
+        try {
+            const formData = new FormData();
+            formData.append("fileId", fileId);
+            await fetch("/api/songs/unavailable", {
+                method: "POST",
+                body: formData
+            });
+        } catch (e) {
+            console.error("Failed to report unavailable song", e);
+        }
+    },
 
     setShuffle: (shuffle) => set({ shuffle }),
     setRepeatMode: (repeatMode) => set({ repeatMode }),

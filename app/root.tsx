@@ -27,14 +27,17 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { isPlaying, currentTrack, volume, nextTrack, setCurrentTime, currentTime, repeatMode } = useAudioStore();
+  const { isPlaying, currentTrack, volume, nextTrack, setCurrentTime, currentTime, repeatMode, markUnavailable } = useAudioStore();
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       if (isPlaying) {
         audioRef.current.play().catch((e: Error) => {
-          if (e.name !== "AbortError") console.error("Playback failed", e);
+          if (e.name !== "AbortError") {
+            console.error("Playback failed", e);
+            if (currentTrack) markUnavailable(currentTrack.fileId);
+          }
         });
       } else {
         audioRef.current.pause();
@@ -73,10 +76,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body
         style={{
-          backgroundColor: "var(--tg-theme-bg-color)",
+          width: "100%",
+          height: "100vh",
           color: "var(--tg-theme-text-color)",
           overflow: "hidden", // Prevent scrolling outside the app
-          height: "100vh"
         }}
         suppressHydrationWarning
       >
@@ -89,6 +92,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             src={`/api/stream/${currentTrack.fileId}`}
             onEnded={handleEnded}
             onTimeUpdate={handleTimeUpdate}
+            onError={() => {
+              if (currentTrack) {
+                console.warn(`Audio error for track: ${currentTrack.title}`);
+                markUnavailable(currentTrack.fileId);
+              }
+            }}
             preload="auto"
           />
         )}

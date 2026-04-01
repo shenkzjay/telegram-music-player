@@ -30,7 +30,15 @@
 
 html,
 body {
-  background-color: var(--tg-theme-bg-color);
+  /* background-color: var(--tg-theme-bg-color); */
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(124, 84, 10, 0.7) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 90%, rgba(95, 2, 95, 0.7) 0%, transparent 50%),
+    linear-gradient(#1a1a1a, #1a1a1a);
+  background-size: 100% 50%, 200% 100%, 100% 100%;
+  background-position: 50% 100%, 0 0, 0 0;
+  background-repeat: no-repeat;
+  min-height: 100vh;
   color: var(--tg-theme-text-color);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;

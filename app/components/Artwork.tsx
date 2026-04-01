@@ -1,12 +1,14 @@
 import React from "react";
+import { Visualizer } from "./Visualizer";
 
 interface ArtworkProps {
     thumbnailId?: string | null;
+    isPlaying?: boolean;
     size?: "sm" | "md" | "lg" | "xl";
     className?: string;
 }
 
-export function Artwork({ thumbnailId, size = "md", className = "" }: ArtworkProps) {
+export function Artwork({ thumbnailId, isPlaying = false, size = "md", className = "" }: ArtworkProps) {
     const sizeClasses = {
         sm: "w-10 h-10 rounded-xl",
         md: "w-12 h-12 rounded-2xl",
@@ -16,10 +18,14 @@ export function Artwork({ thumbnailId, size = "md", className = "" }: ArtworkPro
 
     if (!thumbnailId) {
         return (
-            <div className={`bg-gradient-to-br from-[var(--tg-theme-button-color)] to-[#24a1de] flex items-center justify-center shadow-inner ${sizeClasses[size]} ${className}`}>
-                <svg className={`${size === "xl" ? "w-24 h-24" : "w-6 h-6"} text-white/50`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                </svg>
+            <div className={`bg-white/10 backdrop-blur-[30px] backdrop-contrast-[1] flex items-center justify-center overflow-hidden shadow-inner ${sizeClasses[size]} ${className}`}>
+                {isPlaying ? (
+                    <Visualizer isPlaying={isPlaying} size={size} />
+                ) : (
+                    <svg className={`${size === "xl" ? "w-24 h-24" : "w-6 h-6"} text-white/50`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                    </svg>
+                )}
             </div>
         );
     }

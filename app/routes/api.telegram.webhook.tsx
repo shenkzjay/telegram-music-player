@@ -66,6 +66,14 @@ export async function action({ request }: ActionFunctionArgs) {
                 } else {
                     console.warn(`User with tgId ${tgUserId} not found in database. Make sure you opened the Mini App at least once.`);
                 }
+            } else if (new_chat_member.status === "kicked" || new_chat_member.status === "left") {
+                // Bot removed from channel
+                const tgChatId = chat.id.toString();
+                await prisma.channel.updateMany({
+                    where: { tgChatId },
+                    data: { isActive: false }
+                });
+                console.log(`Bot removed from channel ${tgChatId}. Marked as inactive.`);
             }
             return new Response("OK");
         }
