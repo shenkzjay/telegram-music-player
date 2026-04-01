@@ -14,6 +14,8 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
         shuffleAll
     } = useAudioStore();
 
+    console.log("MusicPlayerPage Playlist:", playlist);
+
     return (
         <div className="relative min-h-screen bg-[var(--tg-theme-bg-color)]">
             <div className="p-6 pb-32 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">

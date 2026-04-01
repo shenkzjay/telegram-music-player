@@ -76,7 +76,8 @@ export async function action({ request }: ActionFunctionArgs) {
             if (post.audio) {
                 const audio = post.audio;
                 const tgChatId = post.chat.id.toString();
-                console.log(`Processing audio channel_post in ${tgChatId}: ${audio.title || "No Title"} - ${audio.performer || "No Performer"}`);
+                console.log(`Processing audio channel_post in ${tgChatId}: ${audio.title || "No Title"}`);
+                console.log("Full Audio object:", JSON.stringify(audio, null, 2));
 
                 // Find the channel in our DB
                 const channel = await prisma.channel.findUnique({
