@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function OnboardingPage({ onConnect }: { onConnect: () => void }) {
+export function OnboardingPage({ onConnect, isChecking = false }: { onConnect: () => void, isChecking?: boolean }) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[90vh] p-6 text-center space-y-12 animate-in fade-in duration-1000">
             <div className="space-y-4">
@@ -31,9 +31,15 @@ export function OnboardingPage({ onConnect }: { onConnect: () => void }) {
             <div className="w-full max-w-md pt-4">
                 <button
                     onClick={onConnect}
-                    className="w-full py-5 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-black text-lg rounded-3xl shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ring-4 ring-[var(--tg-theme-button-color)]/10"
+                    disabled={isChecking}
+                    className="w-full py-5 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-black text-lg rounded-3xl shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ring-4 ring-[var(--tg-theme-button-color)]/10 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
                 >
-                    I've added the bot
+                    {isChecking ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <span className="w-5 h-5 border-4 border-[var(--tg-theme-button-text-color)] border-t-transparent rounded-full animate-spin"></span>
+                            Checking...
+                        </span>
+                    ) : "I've added the bot"}
                 </button>
                 <p className="mt-4 text-xs text-[var(--tg-theme-hint-color)] uppercase tracking-widest font-bold">
                     The bot will  detect your channel

@@ -85,30 +85,41 @@ export default function Home() {
     }
 
     // Handle case where auth failed or wasn't attempted (non-Telegram)
-    // if (!fetcher.data || fetcher.data.error) {
-    //     if (!showSplash) {
-    //         return (
-    //             <div className="p-10 text-center space-y-4">
-    //                 <h1 className="text-xl font-bold">Please open in Telegram</h1>
-    //                 <p className="text-sm text-[var(--tg-theme-hint-color)]">This app only works inside Telegram.</p>
-    //                 {fetcher.data?.error && <pre className="text-xs text-red-500 italic mt-4">{fetcher.data.error}</pre>}
-    //                 <div className="pt-8">
-    //                     <button onClick={() => window.location.reload()} className="px-6 py-2 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-xl">Retry</button>
-    //                 </div>
-    //             </div>
-    //         );
-    //     }
-    //     return <SplashScreen />;
-    // }
+    if (!fetcher.data || fetcher.data.error) {
+        if (!showSplash) {
+            return (
+                <div className="p-10 text-center space-y-4">
+                    <h1 className="text-xl font-bold">Please open in Telegram</h1>
+                    <p className="text-sm text-[var(--tg-theme-hint-color)]">This app only works inside Telegram.</p>
+                    {fetcher.data?.error && <pre className="text-xs text-red-500 italic mt-4">{fetcher.data.error}</pre>}
+                    <div className="pt-8">
+                        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-xl">Retry</button>
+                    </div>
+                </div>
+            );
+        }
+        return <SplashScreen />;
+    }
 
     const user = fetcher.data?.user;
     const channel = user?.channels;
 
+    const [isChecking, setIsChecking] = useState(false);
+
     if (!channel) {
-        return <OnboardingPage onConnect={() => {
-            // Refresh or check again
-            fetcher.submit({ initData: (window as any).Telegram.WebApp.initData }, { method: "post" });
-        }} />;
+        return <OnboardingPage
+            isChecking={isChecking}
+            onConnect={async () => {
+                setIsChecking(true);
+                const WebApp = (await import("@twa-dev/sdk")).default;
+                fetcher.submit(
+                    { initData: WebApp.initData },
+                    { method: "post" }
+                );
+                // Reset checking state after a delay if it doesn't transition
+                setTimeout(() => setIsChecking(false), 3000);
+            }}
+        />;
     }
 
     return <MusicPlayerPage user={user} channel={channel} />;
