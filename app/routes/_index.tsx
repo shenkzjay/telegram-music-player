@@ -39,6 +39,7 @@ export default function Home() {
     const fetcher = useFetcher<typeof action>();
     const [showSplash, setShowSplash] = useState(true);
     const [hasInitialized, setHasInitialized] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
     const setPlaylist = useAudioStore((s: any) => s.setPlaylist);
 
     useEffect(() => {
@@ -103,8 +104,6 @@ export default function Home() {
 
     const user = fetcher.data?.user;
     const channel = user?.channels;
-
-    const [isChecking, setIsChecking] = useState(false);
 
     if (!channel) {
         return <OnboardingPage

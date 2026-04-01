@@ -32,8 +32,8 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
                                 key={track.id}
                                 onClick={() => playTrack(track)}
                                 className={`group flex items-center p-4 rounded-3xl border transition-all cursor-pointer active:scale-95 ${currentTrack?.id === track.id
-                                        ? "bg-[var(--tg-theme-button-color)] border-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] shadow-lg scale-[1.02]"
-                                        : "bg-[var(--tg-theme-secondary-bg-color)] border-[var(--tg-theme-hint-color)]/5 hover:border-[var(--tg-theme-link-color)]/20"
+                                    ? "bg-[var(--tg-theme-button-color)] border-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] shadow-lg scale-[1.02]"
+                                    : "bg-[var(--tg-theme-secondary-bg-color)] border-[var(--tg-theme-hint-color)]/5 hover:border-[var(--tg-theme-link-color)]/20"
                                     }`}
                             >
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md transition-transform ${currentTrack?.id === track.id ? "bg-white/20" : "bg-gradient-to-br from-[var(--tg-theme-button-color)] to-[#24a1de]"
@@ -57,7 +57,7 @@ export function MusicPlayerPage({ user, channel }: { user: any; channel: any }) 
                                     </p>
                                 </div>
                                 <div className={`text-[10px] font-black tabular-nums ${currentTrack?.id === track.id ? "opacity-70" : "text-[var(--tg-theme-hint-color)]"}`}>
-                                    {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
+                                    {track.duration ? `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}` : "0:00"}
                                 </div>
                             </div>
                         ))
