@@ -31,6 +31,8 @@ interface AudioState {
     setCurrentTime: (time: number) => void;
     setIsPlayerOpen: (isOpen: boolean) => void;
     shuffleAll: () => void;
+    skipForward: () => void;
+    skipBackward: () => void;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -65,6 +67,19 @@ export const useAudioStore = create<AudioState>((set, get) => ({
             currentTime: 0,
             isPlayerOpen: true
         });
+    },
+
+    skipForward: () => {
+        const { currentTime, currentTrack } = get();
+        if (!currentTrack) return;
+        const newTime = Math.min(currentTime + 10, currentTrack.duration);
+        set({ currentTime: newTime });
+    },
+
+    skipBackward: () => {
+        const { currentTime } = get();
+        const newTime = Math.max(currentTime - 10, 0);
+        set({ currentTime: newTime });
     },
 
     nextTrack: () => {

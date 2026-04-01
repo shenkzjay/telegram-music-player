@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
     const { fileId } = params;
     const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -21,24 +21,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
         const filePath = fileInfo.result.file_path;
         const downloadUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
 
-        // 2. Proxy the file stream
-        const response = await fetch(downloadUrl);
+        // 2. Proxy the file stream with Range support
+        const range = request.headers.get("Range");
+        const fetchOptions: RequestInit = {
+            method: "GET",
+        };
+        if (range) {
+            fetchOptions.headers = { Range: range };
+        }
+
+        const response = await fetch(downloadUrl, fetchOptions);
 
         // Copy headers to handle range requests, content-type, etc.
         const headers = new Headers();
         const contentType = response.headers.get("Content-Type") || "audio/mpeg";
         headers.set("Content-Type", contentType);
+        headers.set("Accept-Ranges", "bytes");
 
         const contentLength = response.headers.get("Content-Length");
         if (contentLength) headers.set("Content-Length", contentLength);
 
-        // Support range requests for seeking if Telegram supports it (they usually do)
         const contentRange = response.headers.get("Content-Range");
         if (contentRange) headers.set("Content-Range", contentRange);
-
-        if (response.status === 206) {
-            headers.set("Accept-Ranges", "bytes");
-        }
 
         return new Response(response.body, {
             status: response.status,

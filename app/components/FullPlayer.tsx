@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAudioStore } from "~/store/audioStore";
 import { Artwork } from "./Artwork";
 
@@ -15,12 +15,23 @@ export function FullPlayer() {
         setRepeatMode,
         currentTime,
         setCurrentTime,
-        setIsPlayerOpen
+        setIsPlayerOpen,
+        skipForward,
+        skipBackward
     } = useAudioStore();
+
+    const [localTime, setLocalTime] = useState(currentTime);
+    const [isSeeking, setIsSeeking] = useState(false);
+
+    useEffect(() => {
+        if (!isSeeking) {
+            setLocalTime(currentTime);
+        }
+    }, [currentTime, isSeeking]);
 
     if (!currentTrack) return null;
 
-    const progress = (currentTime / currentTrack.duration) * 100;
+    const progress = (localTime / currentTrack.duration) * 100;
 
     const formatTime = (time: number) => {
         const mins = Math.floor(time / 60);
@@ -29,8 +40,9 @@ export function FullPlayer() {
     };
 
     const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newTime = (parseFloat(e.target.value) / 100) * currentTrack.duration;
-        setCurrentTime(newTime);
+        const val = parseFloat(e.target.value);
+        const newTime = (val / 100) * currentTrack.duration;
+        setLocalTime(newTime);
     };
 
     return (
@@ -58,24 +70,49 @@ export function FullPlayer() {
                     <p className="text-lg text-[var(--tg-theme-link-color)] font-bold uppercase tracking-tighter truncate">{currentTrack.artist}</p>
                 </div>
 
-                <div className="w-full space-y-2">
-                    <div className="relative w-full h-1.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-full overflow-hidden">
+                <div className="w-full space-y-3">
+                    <div className="relative w-full h-2 bg-[var(--tg-theme-secondary-bg-color)] rounded-full overflow-hidden">
                         <div
-                            className="absolute top-0 left-0 h-full bg-[var(--tg-theme-button-color)] transition-all duration-300 ease-linear shadow-[0_0_12px_rgba(36,161,222,0.5)]"
+                            className="absolute top-0 left-0 h-full bg-[var(--tg-theme-button-color)] transition-all duration-100 ease-linear shadow-[0_0_12px_rgba(36,161,222,0.5)]"
                             style={{ width: `${progress}%` }}
                         ></div>
                         <input
                             type="range"
                             min="0"
                             max="100"
+                            step="0.1"
                             value={progress}
+                            onPointerDown={() => setIsSeeking(true)}
                             onChange={handleProgressChange}
+                            onPointerUp={() => {
+                                setCurrentTime(localTime);
+                                setIsSeeking(false);
+                            }}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                     </div>
-                    <div className="flex justify-between text-[10px] font-black tabular-nums text-[var(--tg-theme-hint-color)] uppercase tracking-widest">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>-{formatTime(currentTrack.duration - currentTime)}</span>
+                    <div className="flex justify-between text-[10px] font-black tabular-nums text-[var(--tg-theme-hint-color)] uppercase tracking-widest px-1">
+                        <span>{formatTime(localTime)}</span>
+                        <span>-{formatTime(Math.max(0, currentTrack.duration - localTime))}</span>
+                    </div>
+
+                    <div className="flex justify-center space-x-12 pt-2">
+                        <button onClick={(e) => { e.stopPropagation(); skipBackward(); }} className="flex flex-col items-center group active:scale-90 transition-transform">
+                            <div className="w-10 h-10 rounded-full bg-[var(--tg-theme-secondary-bg-color)]/50 flex items-center justify-center text-[var(--tg-theme-text-color)]/70 group-hover:bg-[var(--tg-theme-secondary-bg-color)]">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+                                </svg>
+                            </div>
+                            <span className="text-[8px] font-black mt-1 opacity-40 uppercase">-10s</span>
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); skipForward(); }} className="flex flex-col items-center group active:scale-90 transition-transform">
+                            <div className="w-10 h-10 rounded-full bg-[var(--tg-theme-secondary-bg-color)]/50 flex items-center justify-center text-[var(--tg-theme-text-color)]/70 group-hover:bg-[var(--tg-theme-secondary-bg-color)]">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.934 12.8a1 1 0 000-1.6l-5.334-4A1 1 0 005 8v8a1 1 0 001.6.8l5.334-4zm7.868 0a1 1 0 000-1.6l-5.334-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.334-4z" />
+                                </svg>
+                            </div>
+                            <span className="text-[8px] font-black mt-1 opacity-40 uppercase">+10s</span>
+                        </button>
                     </div>
                 </div>
 
