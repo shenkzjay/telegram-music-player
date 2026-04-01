@@ -47,7 +47,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     setPlaylist: (playlist) => set({ playlist }),
 
-    playTrack: (track) => set({ currentTrack: track, isPlaying: true, currentTime: 0 }),
+    playTrack: (track) => set({ currentTrack: track, isPlaying: true, currentTime: 0, isPlayerOpen: true }),
 
     togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 
