@@ -84,22 +84,26 @@ export async function action({ request }: ActionFunctionArgs) {
                 });
 
                 if (channel) {
+                    const thumbnailId = audio.thumbnail?.file_id || audio.thumb?.file_id;
+
                     await prisma.song.upsert({
                         where: { fileId: audio.file_id },
                         update: {
                             title: audio.title || "Unknown Title",
                             artist: audio.performer || "Unknown Artist",
                             duration: audio.duration || 0,
+                            thumbnailId
                         },
                         create: {
                             fileId: audio.file_id,
+                            thumbnailId,
                             title: audio.title || "Unknown Title",
                             artist: audio.performer || "Unknown Artist",
                             duration: audio.duration || 0,
                             channelId: channel.id
                         }
                     });
-                    console.log(`Song synced: ${audio.title || "Unknown Title"}`);
+                    console.log(`Song synced: ${audio.title || "Unknown Title"} (Thumbnail: ${thumbnailId ? "Yes" : "No"})`);
                 } else {
                     console.log(`No registered channel found for tgChatId ${tgChatId}`);
                 }

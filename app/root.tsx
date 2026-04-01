@@ -27,24 +27,46 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { isPlaying, currentTrack, volume, nextTrack } = useAudioStore();
+  const { isPlaying, currentTrack, volume, nextTrack, setCurrentTime, currentTime, repeatMode } = useAudioStore();
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       if (isPlaying) {
-        audioRef.current.play().catch((e: Error) => console.error("Playback failed", e));
+        audioRef.current.play().catch((e: Error) => {
+          if (e.name !== "AbortError") console.error("Playback failed", e);
+        });
       } else {
         audioRef.current.pause();
       }
     }
   }, [isPlaying, currentTrack, volume]);
 
+  // Sync currentTime from store (e.g., seeking)
+  useEffect(() => {
+    if (audioRef.current && Math.abs(audioRef.current.currentTime - currentTime) > 1) {
+      audioRef.current.currentTime = currentTime;
+    }
+  }, [currentTime]);
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    setCurrentTime(e.currentTarget.currentTime);
+  };
+
+  const handleEnded = () => {
+    if (repeatMode === 'one' && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    } else {
+      nextTrack();
+    }
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <Meta />
         <Links />
         <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
@@ -53,15 +75,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         style={{
           backgroundColor: "var(--tg-theme-bg-color)",
           color: "var(--tg-theme-text-color)",
+          overflow: "hidden", // Prevent scrolling outside the app
+          height: "100vh"
         }}
         suppressHydrationWarning
       >
-        {children}
+        <div className="h-full overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
         {currentTrack && (
           <audio
             ref={audioRef}
-            src={currentTrack ? `/api/stream/${currentTrack.fileId}` : undefined}
-            onEnded={nextTrack}
+            src={`/api/stream/${currentTrack.fileId}`}
+            onEnded={handleEnded}
+            onTimeUpdate={handleTimeUpdate}
+            preload="auto"
           />
         )}
         <ScrollRestoration />
