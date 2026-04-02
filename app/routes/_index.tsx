@@ -48,12 +48,14 @@ export async function action({ request }: Route.ActionArgs) {
         }
     });
 
-    // DEV MODE: Inject mock data if no real channel exists
-    if (process.env.NODE_ENV === "development" && (!user.channels || user.channels.songs.length === 0)) {
-        console.log("DEV MODE: Injecting mock songs for testing");
+    // DEV MODE: Inject mock data if no active channel exists
+    if (process.env.NODE_ENV === "development" && (!user.channels || !user.channels.isActive || user.channels.songs.length === 0)) {
+        console.log("DEV MODE: Injecting mock songs and forcing active state");
         (user as any).channels = {
             id: -1,
             tgChatId: "mock_chat",
+            isActive: true,
+            isVerified: true,
             songs: [
                 {
                     id: -1,
@@ -61,7 +63,8 @@ export async function action({ request }: Route.ActionArgs) {
                     title: "Stargazing (Mock)",
                     artist: "Myles Smith",
                     duration: 172,
-                    thumbnailId: null
+                    thumbnailId: null,
+                    isAvailable: true
                 },
                 {
                     id: -2,
@@ -69,7 +72,8 @@ export async function action({ request }: Route.ActionArgs) {
                     title: "Grace (Mock)",
                     artist: "Michael W. Smith",
                     duration: 246,
-                    thumbnailId: null
+                    thumbnailId: null,
+                    isAvailable: true
                 }
             ]
         };

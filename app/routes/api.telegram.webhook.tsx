@@ -62,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
                         }
                     });
 
-                    await sendMessage(tgUserId, `✅ Channel connected! I'll now sync music from ${chat.title || "your channel"}.`);
+                    await sendMessage(tgUserId, `Channel connected! I'll now sync music from ${chat.title || "your channel"}.`);
                 } else {
                     console.warn(`User with tgId ${tgUserId} not found in database. Make sure you opened the Mini App at least once.`);
                 }

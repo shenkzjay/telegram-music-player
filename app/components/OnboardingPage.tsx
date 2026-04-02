@@ -4,7 +4,7 @@ export function OnboardingPage({ onConnect, isChecking = false }: { onConnect: (
     return (
         <div className="flex flex-col items-center justify-center min-h-[90vh] p-6 text-center space-y-12 animate-in fade-in duration-1000">
             <div className="space-y-4">
-                <h1 className="text-3xl font-black tracking-tight">Connect your channel</h1>
+                <h1 className="text-3xl text-white tracking-tight">Connect your channel</h1>
                 <p className="text-[var(--tg-theme-hint-color)]">
                     Follow these simple steps to start playing your music.
                 </p>
@@ -13,16 +13,16 @@ export function OnboardingPage({ onConnect, isChecking = false }: { onConnect: (
             <div className="w-full max-w-md space-y-4">
                 {[
                     { step: 1, title: "Create a Channel", desc: "Create a private Telegram channel for your music library." },
-                    { step: 2, title: "Upload Music", desc: "Upload your favorite MP3 files to your new channel." },
-                    { step: 3, title: "Add Musichome Bot", desc: "Add @mymusichome_bot as an administrator to your channel." },
+                    { step: 2, title: "Add @shenkzmusic_bot", desc: " Add @shenkzmusic_bot as an administrator to your channel" },
+                    { step: 3, title: "Upload Music", desc: "Upload your favorite MP3 files to your new channel." },
                 ].map((item) => (
-                    <div key={item.step} className="flex items-start space-x-4 p-5 bg-[var(--tg-theme-secondary-bg-color)] rounded-3xl border border-[var(--tg-theme-hint-color)]/5 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={item.step} className="flex items-start space-x-4 p-5 bg-white/8 backdrop-blur-[30px] backdrop-contrast-[1] rounded-3xl border border-[var(--tg-theme-hint-color)]/50 shadow-sm hover:shadow-md transition-shadow">
                         <div className="w-8 h-8 rounded-full bg-[var(--tg-theme-button-color)] flex items-center justify-center text-[var(--tg-theme-button-text-color)] font-bold shrink-0">
                             {item.step}
                         </div>
                         <div className="text-left space-y-1">
-                            <h3 className="font-bold text-lg leading-none">{item.title}</h3>
-                            <p className="text-sm text-[var(--tg-theme-hint-color)] leading-relaxed">{item.desc}</p>
+                            <h3 className="font-bold text-lg text-white leading-none">{item.title}</h3>
+                            <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
                         </div>
                     </div>
                 ))}
