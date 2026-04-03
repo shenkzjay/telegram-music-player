@@ -27,23 +27,37 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { isPlaying, currentTrack, volume, nextTrack, setCurrentTime, currentTime, repeatMode, markUnavailable } = useAudioStore();
+  const { isPlaying, currentTrack, volume, nextTrack, setCurrentTime, currentTime, repeatMode } = useAudioStore();
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       if (isPlaying) {
+        // If the src is already set and we just want to play
         audioRef.current.play().catch((e: Error) => {
           if (e.name !== "AbortError") {
             console.error("Playback failed", e);
-            if (currentTrack) markUnavailable(currentTrack.fileId);
           }
         });
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, currentTrack, volume]);
+  }, [isPlaying, volume]);
+
+  // Handle track changes separately to ensure load() and play()
+  useEffect(() => {
+    if (audioRef.current && currentTrack) {
+      audioRef.current.load();
+      if (isPlaying) {
+        audioRef.current.play().catch((e: Error) => {
+          if (e.name !== "AbortError") {
+            console.error("Playback failed on track change", e);
+          }
+        });
+      }
+    }
+  }, [currentTrack?.id]);
 
   // Sync currentTime from store (e.g., seeking)
   useEffect(() => {
@@ -57,11 +71,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const handleEnded = () => {
+    nextTrack();
+    // If repeatMode was 'one', currentTrack doesn't change, so we manually restart
     if (repeatMode === 'one' && audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    } else {
-      nextTrack();
+      audioRef.current.play().catch(e => console.error("Failed to replay", e));
     }
   };
 
@@ -95,9 +109,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             onError={() => {
               if (currentTrack) {
                 console.warn(`Audio error for track: ${currentTrack.title}`);
-                markUnavailable(currentTrack.fileId);
               }
             }}
+            autoPlay={isPlaying}
             preload="auto"
           />
         )}

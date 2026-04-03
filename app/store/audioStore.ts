@@ -33,7 +33,6 @@ interface AudioState {
     shuffleAll: () => void;
     skipForward: () => void;
     skipBackward: () => void;
-    markUnavailable: (fileId: string) => Promise<void>;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -48,34 +47,18 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     setPlaylist: (playlist) => set({ playlist }),
 
-    playTrack: (track) => set({ currentTrack: track, isPlaying: true, currentTime: 0, isPlayerOpen: true }),
+    playTrack: (track) => {
+        // Force a small state update if it's the same track to ensure useEffect triggers
+        const { currentTrack } = get();
+        if (currentTrack?.id === track.id) {
+            set({ currentTime: 0, isPlaying: true, isPlayerOpen: true });
+        } else {
+            set({ currentTrack: track, isPlaying: true, currentTime: 0, isPlayerOpen: true });
+        }
+    },
 
     togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 
-    markUnavailable: async (fileId: string) => {
-        const { playlist, currentTrack, nextTrack } = get();
-
-        // Mark locally
-        const updatedPlaylist = playlist.filter(s => s.fileId !== fileId);
-        set({ playlist: updatedPlaylist });
-
-        // If it was the current track, go to next
-        if (currentTrack?.fileId === fileId) {
-            nextTrack();
-        }
-
-        // Report to server
-        try {
-            const formData = new FormData();
-            formData.append("fileId", fileId);
-            await fetch("/api/songs/unavailable", {
-                method: "POST",
-                body: formData
-            });
-        } catch (e) {
-            console.error("Failed to report unavailable song", e);
-        }
-    },
 
     setShuffle: (shuffle) => set({ shuffle }),
     setRepeatMode: (repeatMode) => set({ repeatMode }),
@@ -141,7 +124,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
                 }
             }
         }
-        set({ currentTrack: playlist[nextIndex], isPlaying: true, currentTime: 0 });
+        const nextTrackData = playlist[nextIndex];
+        set({ currentTrack: nextTrackData, isPlaying: true, currentTime: 0 });
     },
 
     prevTrack: () => {
